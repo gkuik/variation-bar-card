@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.tsbuildinfo
+npm-debug.log*
+
+# Local settings (e.g. HA_WWW_DIR)
+.env.local
+.env.*.local
+
+.DS_Store
+.idea/
