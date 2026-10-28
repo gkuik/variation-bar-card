@@ -3,7 +3,9 @@ import {
   DEFAULT_AMPLITUDE,
   DEFAULT_COLOR_NEGATIVE,
   DEFAULT_COLOR_POSITIVE,
+  DEFAULT_ORIENTATION,
   EDITOR_NAME,
+  ORIENTATIONS,
 } from './const';
 import { localize, type Key } from './localize';
 import type { HomeAssistant, LovelaceCardEditor, VariationBarCardConfig } from './types';
@@ -17,11 +19,29 @@ interface SchemaItem {
 }
 
 // `ha-form` is the HA frontend form component: entity, colour and action selectors identical
-// to those of the built-in card editors.
-const SCHEMA: SchemaItem[] = [
+// to those of the built-in card editors. Built per language for the orientation labels.
+const schema = (hass: HomeAssistant): SchemaItem[] => [
   { name: 'entity', selector: { entity: { domain: ['sensor', 'number', 'input_number'] } } },
   { name: 'name', selector: { text: {} } },
-  { name: 'amplitude', selector: { number: { mode: 'box', step: 'any', min: 0 } } },
+  {
+    name: '',
+    type: 'grid',
+    schema: [
+      { name: 'amplitude', selector: { number: { mode: 'box', step: 'any', min: 0 } } },
+      {
+        name: 'orientation',
+        selector: {
+          select: {
+            mode: 'dropdown',
+            options: ORIENTATIONS.map((value) => ({
+              value,
+              label: localize(`editor.orientation.${value}`, hass),
+            })),
+          },
+        },
+      },
+    ],
+  },
   {
     name: '',
     type: 'grid',
@@ -48,8 +68,19 @@ export class VariationBarCardEditor extends LitElement implements LovelaceCardEd
   declare hass?: HomeAssistant;
   declare private _config?: VariationBarCardConfig;
 
+  /** Same schema object between renders, rebuilt only when the language changes. */
+  private _schema?: { language: string; items: SchemaItem[] };
+
   public setConfig(config: VariationBarCardConfig): void {
     this._config = config;
+  }
+
+  private _schemaFor(hass: HomeAssistant): SchemaItem[] {
+    const { language } = hass.locale;
+    if (this._schema?.language !== language) {
+      this._schema = { language, items: schema(hass) };
+    }
+    return this._schema.items;
   }
 
   protected override render() {
@@ -59,8 +90,8 @@ export class VariationBarCardEditor extends LitElement implements LovelaceCardEd
     return html`
       <ha-form
         .hass=${this.hass}
-        .data=${{ amplitude: DEFAULT_AMPLITUDE, ...this._config }}
-        .schema=${SCHEMA}
+        .data=${{ amplitude: DEFAULT_AMPLITUDE, orientation: DEFAULT_ORIENTATION, ...this._config }}
+        .schema=${this._schemaFor(this.hass)}
         .computeLabel=${this._computeLabel}
         @value-changed=${this._valueChanged}
       ></ha-form>

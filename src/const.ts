@@ -7,6 +7,8 @@ export const EDITOR_NAME = `${CARD_NAME}-editor`;
 
 /** Scale from -amplitude to +amplitude: zero is always in the middle. */
 export const DEFAULT_AMPLITUDE = 3;
+export const ORIENTATIONS = ['vertical', 'horizontal'] as const;
+export const DEFAULT_ORIENTATION = 'vertical';
 export const DEFAULT_COLOR_POSITIVE = 'orange';
 export const DEFAULT_COLOR_NEGATIVE = 'blue';
 

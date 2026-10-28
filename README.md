@@ -4,8 +4,9 @@
 [![GitHub release](https://img.shields.io/github/v/release/gkuik/variation-bar-card)](https://github.com/gkuik/variation-bar-card/releases)
 [![CI](https://github.com/gkuik/variation-bar-card/actions/workflows/ci.yml/badge.svg)](https://github.com/gkuik/variation-bar-card/actions/workflows/ci.yml)
 
-A Home Assistant dashboard card showing a **vertical bar centred on zero**: it grows
-upwards in orange when the value is positive and downwards in blue when it is negative.
+A Home Assistant dashboard card showing a **bar centred on zero**: it grows upwards (or to
+the right) in orange when the value is positive and downwards (or to the left) in blue when
+it is negative.
 
 Made for values that go both ways, such as the **rate of change of a temperature** (°C/h),
 a power balance or a pressure trend.
@@ -17,6 +18,7 @@ a power balance or a pressure trend.
 - Zero is always in the middle; the scale goes from `-amplitude` to `+amplitude`, with
   graduations.
 - Values beyond the amplitude are clamped to the end of the bar.
+- Vertical or horizontal bar: the horizontal one fits a wide, low card.
 - The bar always animates from the centre: going from positive to negative, it first
   shrinks back to 0, then grows on the other side.
 - Looks and behaves like a built-in card: theme colours (light and dark), ripple effect,
@@ -60,6 +62,7 @@ entity: sensor.temperature_rate_of_change
 | `entity`         | string | **required**                 | Numeric entity (`sensor`, `number`, `input_number`).           |
 | `name`           | string | entity name                  | Name shown above the value.                                    |
 | `amplitude`      | number | `3`                          | The scale goes from `-amplitude` to `+amplitude`. Must be > 0. |
+| `orientation`    | string | `vertical`                   | `vertical` (positive upwards) or `horizontal` (positive to the right). |
 | `color_positive` | string | `orange`                     | Bar colour above 0: theme colour name or CSS colour.           |
 | `color_negative` | string | `blue`                       | Bar colour below 0: theme colour name or CSS colour.           |
 | `tap_action`     | object | `{ action: more-info }`      | Standard [tap action](https://www.home-assistant.io/dashboards/actions/). |
@@ -72,6 +75,15 @@ Temperature rate of change of a floor, from -2 to +2 °C/h:
 type: custom:variation-bar-card
 entity: sensor.ground_floor_temperature_rate
 name: Ground floor
+amplitude: 2
+```
+
+Horizontal bar (half width and 2 rows high by default in the sections view):
+
+```yaml
+type: custom:variation-bar-card
+entity: sensor.living_room_temperature_rate
+orientation: horizontal
 amplitude: 2
 ```
 

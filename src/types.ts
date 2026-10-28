@@ -27,9 +27,13 @@ export interface ActionConfig {
   [key: string]: unknown;
 }
 
+export type Orientation = 'vertical' | 'horizontal';
+
 export interface VariationBarCardConfig extends LovelaceCardConfig {
   entity?: string;
   name?: string;
+  /** `vertical`: positive values grow upwards; `horizontal`: to the right. */
+  orientation?: Orientation;
   /** Maximum deviation shown on each side of 0 (scale -amplitude → +amplitude). */
   amplitude?: number;
   /** Named theme colour (`orange`…) or CSS colour (`#ff9800`, `rgb(…)`). */
