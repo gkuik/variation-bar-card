@@ -1,6 +1,6 @@
 {
   "name": "variation-bar-card",
-  "version": "0.1.0",
+  "version": "0.2.0-beta.1",
   "description": "Home Assistant Lovelace card: a vertical bar centred on zero, orange above and blue below. Ideal for a rate of change.",
   "private": true,
   "type": "module",
