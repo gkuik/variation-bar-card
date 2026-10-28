@@ -117,12 +117,28 @@ npm run lint      # eslint + prettier
 To test in a development Home Assistant instance, copy `.env.example` to `.env.local` and set
 `HA_WWW_DIR` to its `config/www` folder: builds go straight there, served on `/local/`.
 
+### Branches and commits
+
+The project follows [git flow](https://nvie.com/posts/a-successful-git-branching-model/):
+`main` holds released versions, `develop` the next one, and work happens on `feature/*`
+branches from `develop`. Commit messages follow
+[Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`…).
+
 ### Releasing
 
-1. Bump `version` in `package.json` and commit.
-2. Push a matching tag: `git tag v0.1.0 && git push origin v0.1.0`.
-3. The **Release** workflow builds the card and publishes a GitHub release with
-   `variation-bar-card.js` attached, which HACS offers as an update.
+Pushing a tag `vX.Y.Z` that matches `version` in `package.json` triggers the **Release**
+workflow: it builds the card and publishes a GitHub release with `variation-bar-card.js`
+attached, which HACS offers as an update.
+
+1. Create `release/X.Y.Z` from `develop`.
+2. Pre-releases (optional): set `version` to `X.Y.Z-beta.1` in `package.json`, commit
+   (`chore(release): X.Y.Z-beta.1`) and push the tag `vX.Y.Z-beta.1`. A tag with a label
+   (`-beta.N`, `-rc.N`…) publishes a GitHub **pre-release**: HACS only offers it to users who
+   enabled **Show beta versions** for the card (**⋮ → Redownload** in HACS). Repeat with
+   `beta.2`, `rc.1`… after each fix.
+3. Set `version` to `X.Y.Z`, commit (`chore(release): X.Y.Z`), merge the release branch into
+   `main` and back into `develop`.
+4. Tag `main` and push the tag: `git tag vX.Y.Z && git push origin vX.Y.Z`.
 
 Tested with Home Assistant 2026.10.
 
