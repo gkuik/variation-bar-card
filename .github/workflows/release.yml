@@ -2,6 +2,8 @@ name: Release
 
 # Pushing a tag vX.Y.Z (matching "version" in package.json) builds the card and publishes a
 # GitHub release with variation-bar-card.js attached: HACS installs that file.
+# A tag with a pre-release label (vX.Y.Z-beta.N, vX.Y.Z-rc.N…) publishes a pre-release instead:
+# HACS only offers it to users who enabled beta versions for the card.
 on:
   push:
     tags: ["v*"]
@@ -49,4 +51,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
-        run: gh release create "$TAG" dist/variation-bar-card.js --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes --verify-tag
+        run: |
+          flags=()
+          if [[ "$TAG" == *-* ]]; then
+            flags+=(--prerelease)
+          fi
+          gh release create "$TAG" dist/variation-bar-card.js --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes --verify-tag "${flags[@]}"
