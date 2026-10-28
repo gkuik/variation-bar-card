@@ -6,7 +6,9 @@ import {
   DEFAULT_AMPLITUDE,
   DEFAULT_COLOR_NEGATIVE,
   DEFAULT_COLOR_POSITIVE,
+  DEFAULT_ORIENTATION,
   EDITOR_NAME,
+  ORIENTATIONS,
   THEME_COLORS,
 } from './const';
 import './editor';
@@ -81,17 +83,26 @@ export class VariationBarCard extends LitElement {
     if (!Number.isFinite(amplitude) || amplitude <= 0) {
       throw new Error(localize('card.invalid_amplitude', this.hass));
     }
+    if (config.orientation !== undefined && !ORIENTATIONS.includes(config.orientation)) {
+      throw new Error(localize('card.invalid_orientation', this.hass));
+    }
     this._config = { ...config, amplitude };
+  }
+
+  private get _horizontal(): boolean {
+    return (this._config?.orientation ?? DEFAULT_ORIENTATION) === 'horizontal';
   }
 
   /** Approximate height (1 unit = 50 px) for the masonry view. */
   public getCardSize(): number {
-    return 4;
+    return this._horizontal ? 2 : 4;
   }
 
   /** Default size in the sections view. */
   public getGridOptions() {
-    return { columns: 3, rows: 4, min_columns: 2, min_rows: 3 };
+    return this._horizontal
+      ? { columns: 6, rows: 2, min_columns: 4, min_rows: 2 }
+      : { columns: 3, rows: 4, min_columns: 2, min_rows: 3 };
   }
 
   // `hass` changes on EVERY state change of the whole instance:
@@ -133,8 +144,10 @@ export class VariationBarCard extends LitElement {
     const value = Number(stateObj.state);
     const valid = stateObj.state !== '' && Number.isFinite(value);
 
-    // The bar starts from the centre (0): upwards when positive, downwards when negative.
+    // The bar starts from the centre (0): upwards (or rightwards) when positive, downwards
+    // (or leftwards) when negative.
     const offset = valid ? toOffset(value, amplitude) : 0;
+    const size = this._horizontal ? 'width' : 'height';
     const name = this._config.name ?? stateObj.attributes.friendly_name ?? entity;
     const scale = new Intl.NumberFormat(this.hass.locale.language, {
       signDisplay: 'exceptZero',
@@ -153,7 +166,7 @@ export class VariationBarCard extends LitElement {
         @keydown=${this._handleKeyDown}
       >
         <ha-ripple .disabled=${!this._hasAction}></ha-ripple>
-        <div class="content">
+        <div class="content ${this._horizontal ? 'horizontal' : 'vertical'}">
           <div class="header">
             <span class="name">${name}</span>
             <span class="value">${formatted}</span>
@@ -171,7 +184,7 @@ export class VariationBarCard extends LitElement {
               <div
                 class="fill up"
                 style=${styleMap({
-                  height: `${Math.max(offset, 0)}%`,
+                  [size]: `${Math.max(offset, 0)}%`,
                   background: cssColor(this._config.color_positive ?? DEFAULT_COLOR_POSITIVE),
                   ...this._transition(upTiming),
                 })}
@@ -179,7 +192,7 @@ export class VariationBarCard extends LitElement {
               <div
                 class="fill down"
                 style=${styleMap({
-                  height: `${Math.max(-offset, 0)}%`,
+                  [size]: `${Math.max(-offset, 0)}%`,
                   background: cssColor(this._config.color_negative ?? DEFAULT_COLOR_NEGATIVE),
                   ...this._transition(downTiming),
                 })}
@@ -322,7 +335,7 @@ export class VariationBarCard extends LitElement {
       position: absolute;
       left: 0;
       right: 0;
-      transition-property: height;
+      transition-property: height, width;
     }
     .fill.up {
       bottom: 50%;
@@ -362,6 +375,68 @@ export class VariationBarCard extends LitElement {
     }
     .scale .min {
       bottom: 0;
+    }
+    /* Horizontal: name and value on one line, bar across the card, scale below it (-, 0, +). */
+    .horizontal {
+      align-items: stretch;
+      gap: 8px;
+    }
+    .horizontal .header {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .horizontal .name {
+      min-width: 0;
+    }
+    .horizontal .gauge {
+      flex-direction: column;
+      gap: 4px;
+      min-height: 0;
+    }
+    .horizontal .track {
+      flex: 1;
+      width: auto;
+      min-height: 16px;
+      max-height: 40px;
+    }
+    .horizontal .fill {
+      top: 0;
+      bottom: 0;
+      left: auto;
+      right: auto;
+    }
+    .horizontal .fill.up {
+      left: 50%;
+    }
+    .horizontal .fill.down {
+      right: 50%;
+    }
+    .horizontal .zero {
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      right: auto;
+      width: 2px;
+      height: auto;
+      transform: translateX(-50%);
+    }
+    .horizontal .scale {
+      min-width: 0;
+      height: 1em;
+    }
+    .horizontal .scale span {
+      top: 0;
+      bottom: auto;
+    }
+    .horizontal .scale .max {
+      left: auto;
+      right: 0;
+    }
+    .horizontal .scale .mid {
+      left: 50%;
+      transform: translateX(-50%);
     }
     .warning {
       padding: 16px;
